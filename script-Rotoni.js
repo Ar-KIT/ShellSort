@@ -3,89 +3,91 @@ let stepsContent = document.querySelector(".buttons .steps");
 let moveContent = document.querySelector(".buttons .move");
 let cards = document.querySelectorAll('.card');
 let arrValues = Array.from(cards).map(card => parseInt(card.textContent));
-console.log(arrValues);
-let increments = [1, 3];
-
+let totalSteps;
 let sortButton = document.getElementById("sort");
-sortButton.addEventListener("click", () => {
-    shellSort(arrValues);
+let shuffleButton = document.getElementById("shuffle")
+
+sortButton.addEventListener("click", async () => {
+    currentStep = 0;
+    totalSteps = countShellSortSteps([...arrValues]);
+    sortButton.disabled = true;
+    sortButton.classList.add("disabled");
+
+    await shellSort(arrValues);
+    moveContent.textContent = "";
+    shuffleButton.style.display ="block"
 });
+shuffleButton.addEventListener("click", async ()=>{
+    currentStep = 0;
+    changeStepContent();
+    arrValues = generateShuffledArray(1, 50);
+    updateCardValues();
+    shuffleButton.style.display = "none";
+    sortButton.disabled = false;
+    sortButton.classList.remove("disabled");
+    stepsContent.textContent = "";
+})
 
 async function shellSort(arr) {
+    
     let n = arr.length;
-    let callAction = 0;
-
-    let actionsArray = [
-        { index: 0, action: 'compare' },
-        { index: 1, action: 'swap' },
-        { index: 2, action: 'compare' },
-        { index: 3, action: 'not swap' },
-        { index: 4, action: 'compare' },
-        { index: 5, action: 'swap' },
-        { index: 6, action: 'compare' },
-        { index: 7, action: 'swap' },
-        { index: 8, action: 'compare' },
-        { index: 9, action: 'not swap' },
-        { index: 10, action: 'compare' },
-        { index: 11, action: 'not swap' },
-        { index: 12, action: 'compare' },
-        { index: 13, action: 'swap' },
-        { index: 14, action: 'compare' },
-        { index: 15, action: 'swap' },
-        { index: 16, action: 'compare' },
-        { index: 17, action: 'swap' },
-        { index: 18, action: 'compare' },
-        { index: 19, action: 'not swap' },
-    ];
+    let toSwap;
     for (let gap = Math.floor(n/2); gap > 0; gap = Math.floor(gap/2)) {
         for (let i = gap; i < n ; i += 1) {
-            
+            toSwap = false;
             if(arr[i] < arr[i-gap] && gap === 1){
+                moveContent.textContent = "Compare the Cards"
                 let j;
                 let temp = arr[i];
                 
                 for (j = i; j >= gap && arr[j-gap] > temp; j-=gap)  {
+                    moveContent.textContent = "Compare the Cards"
                     arr[j] = arr[j-gap];
                     arr[j-gap] = temp
 
                     changeStepContent();
                     addHighlight(j, j-gap);
-                    moveContent.textContent = actionsArray[callAction].action;
-                    callAction++;   
-                    await delay(2000);
-
+                    await delay(900);
+                    toSwap = true;
+                    if(toSwap){
+                        moveContent.textContent = "Swap the Cards"
+                    }else{
+                        moveContent.textContent = "Don't Swap the Cards"
+                    }
                     changeStepContent();
                     removeHighlight(j, j - gap, arr);
-                    moveContent.textContent = actionsArray[callAction].action;
-                    callAction++;
-                    await delay(1000);
+                    await delay(1500);
 
                     removeSwap();
+                    
                 }
                 arr[j] = temp;
                 
+                
             }else{
+                moveContent.textContent = "Compare the Cards"
                 let x = arr[i];
                 let y = arr[i-gap];
                 if(arr[i] < arr[i-gap]){
-
                     arr[i] = y;
                     arr[i-gap] = x;
+                    toSwap = true;
                 }
                 changeStepContent();
                 addHighlight(i, i - gap);
-                moveContent.textContent = actionsArray[callAction].action;
-                callAction++;
-                await delay(2000);
-
+                await delay(900);
+                if(toSwap){
+                    moveContent.textContent = "Swap the Cards"
+                }else{
+                    moveContent.textContent = "Don't Swap the Cards"
+                }
                 changeStepContent();
                 removeHighlight(i, i - gap, arr);
-                moveContent.textContent = actionsArray[callAction].action; 
-                callAction++;
                 await delay(1000);
 
                 removeSwap();
             }
+
         }
     }
     return arr;
@@ -116,5 +118,53 @@ function addHighlight(x,y){
 
 function changeStepContent() {
     currentStep++;
-    stepsContent.textContent = `STEP ${currentStep}/20`;
+    stepsContent.textContent = `STEP ${currentStep}/${totalSteps}`;
+}
+function countShellSortSteps(arr) {
+    let n = arr.length;
+    let totalSteps = 0;
+
+    for (let gap = Math.floor(n/2); gap > 0; gap = Math.floor(gap/2)) {
+        for (let i = gap; i < n ; i += 1) {
+            if(arr[i] < arr[i-gap] && gap === 1){
+                let j;
+                let temp = arr[i];
+                
+                for (j = i; j >= gap && arr[j-gap] > temp; j-=gap)  {
+                    arr[j] = arr[j-gap];
+                    arr[j-gap] = temp
+
+                    totalSteps+= 2;
+                }
+                arr[j] = temp;
+            }else{
+                let x = arr[i];
+                let y = arr[i-gap];
+                if(arr[i] < arr[i-gap]){
+                    arr[i] = y;
+                    arr[i-gap] = x;
+                    toSwap = true;
+                }
+                totalSteps+= 2;
+            }
+
+        }
+    }
+    return totalSteps;
+}
+
+function generateShuffledArray(min, max) {
+    let allValues = Array.from({ length: max - min + 1 }, (_, index) => index + min);
+    
+    for (let i = allValues.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allValues[i], allValues[j]] = [allValues[j], allValues[i]];
+    }
+
+    return allValues.slice(0, 6);
+}
+function updateCardValues() {
+    cards.forEach((card, index) => {
+        card.textContent = arrValues[index];
+    });
 }

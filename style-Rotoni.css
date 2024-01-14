@@ -156,13 +156,33 @@ body{
     0% {
         transform: translateY(0px);
     }
-    50% {
-        transform: translateY(-20px);
+    75% {
+        transform: translateY(-10px);
     }
     100% {
-        transform: translateY(-20px);
+        transform: translateY(-10px);
     }
 }
 .swap{
     background-color: darkblue;
+}
+button.disabled{
+    cursor: default;
+    background-color: #aaa;
+    border: 3px solid #aaa;
+    color: #aae;
+    
+}
+button.disabled:hover{
+    color: #aae;
+}
+.buttons button:disabled::before {
+    background: #aaa;
+}
+
+.buttons button:disabled:hover::before {
+    width: 0;
+}
+#shuffle{
+    display: none;
 }
